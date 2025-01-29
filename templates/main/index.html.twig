@@ -3,18 +3,25 @@
 {% block title %}Hello MainController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+<header>
+        <nav>
+            <ul>
+                <li><a href="/register">Registrarse</a></li>
+                {% if app.user %}
+                    <li><a href="/logout">Cerrar Sesión</a></li>
+                {% else %}
+                    <li><a href="/login">Iniciar Sesión</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/ambro/entornos/2º DAW/Servidor/ludopatia descontrolada/juegoCartas/juegoCartas/src/Controller/MainController.php</code></li>
-        <li>Your template at <code>C:/Users/ambro/entornos/2º DAW/Servidor/ludopatia descontrolada/juegoCartas/juegoCartas/templates/main/index.html.twig</code></li>
-    </ul>
-</div>
+    <main>
+        <h1>Bienvenido a Nuestra Página</h1>
+        {% if app.user %}
+            <p>Hola, {{ app.user.username }}! Nos alegra verte de nuevo.</p>
+        {% else %}
+            <p>Por favor, inicia sesión para jugar a las cartas</p>
+        {% endif %}
+    </main>
 {% endblock %}
