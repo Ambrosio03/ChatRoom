@@ -12,6 +12,16 @@
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        {% block body %}
+        <nav>
+            <ul>
+                {% if app.user %}
+                    <li><a href="/logout">Cerrar Sesión</a></li>
+                {% else %}
+                    <li><a href="/login">Iniciar Sesión</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+   {% endblock %}
     </body>
 </html>

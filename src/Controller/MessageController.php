@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Message;
 use App\Form\MessageType;
 use App\Repository\MessageRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,18 +14,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/message')]
 final class MessageController extends AbstractController{
-    #[Route(name: 'app_message_index', methods: ['GET'])]
-    public function index(MessageRepository $messageRepository): Response
-    {
-        return $this->render('message/index.html.twig', [
-            'messages' => $messageRepository->findAll(),
-        ]);
-    }
-
-    #[Route('/new', name: 'app_message_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route(name: 'app_message_index', methods: ['GET','POST'])]
+    public function index(MessageRepository $messageRepository, Request $request, EntityManagerInterface $entityManager): Response
     {
         $message = new Message();
+        $message->setUser($this->getUser());
+        // $message->setChat($this->)
+        $message->setDate(new \DateTime());
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
 
@@ -35,9 +31,9 @@ final class MessageController extends AbstractController{
             return $this->redirectToRoute('app_message_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('message/new.html.twig', [
-            'message' => $message,
-            'form' => $form,
+        return $this->render('message/index.html.twig', [
+            'messages' => $messageRepository->findAll(),
+            'form' => $form->createView(),
         ]);
     }
 
