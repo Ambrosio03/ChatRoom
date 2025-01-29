@@ -11,16 +11,18 @@
                 <th>Id</th>
                 <td>{{ chat.id }}</td>
             </tr>
-            <tr>
-                <th>Users</th>
-                <td>{{ chat.users ? chat.users|join(', ') : '' }}</td>
-            </tr>
+            
         </tbody>
     </table>
 
     <a href="{{ path('app_chat_index') }}">back to list</a>
+    {% for message in messages %}
+    <div class="message">
+        <p><strong>{{ message.user.username }}</strong> - <em>{{ message.date|date("d/m/Y H:i") }}</em></p>
+        <p>{{ message.text }}</p>
+    </div>
+    {% endfor %}
 
-    <a href="{{ path('app_chat_edit', {'id': chat.id}) }}">edit</a>
 
     {{ include('chat/_delete_form.html.twig') }}
 {% endblock %}

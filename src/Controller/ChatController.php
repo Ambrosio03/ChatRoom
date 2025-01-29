@@ -5,8 +5,11 @@ namespace App\Controller;
 use App\Entity\Chat;
 use App\Form\ChatType;
 use App\Repository\ChatRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -43,12 +46,15 @@ final class ChatController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_chat_show', methods: ['GET'])]
-    public function show(Chat $chat): Response
+    public function show(Chat $chat, Security $security, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-        //$user->setChat($chat);
+        $user = $userRepository->findby(['username' => $security->getUser()->getUserIdentifier()]);
+        $user[0]->setChat($chat);
+        $entityManager->persist($user[0]);
+        $entityManager->flush();
         return $this->render('chat/show.html.twig', [
             'chat' => $chat,
+            'messages' => $chat->getMessages(),
         ]);
     }
 
