@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Chat;
 use App\Form\ChatType;
 use App\Repository\ChatRepository;
+use App\Repository\UserChatRoomsRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,73 +18,39 @@ use Symfony\Component\Routing\Attribute\Route;
 #[Route('/chat')]
 final class ChatController extends AbstractController
 {
-    #[Route(name: 'app_chat_index', methods: ['GET'])]
-    public function index(ChatRepository $chatRepository): Response
+     #[Route(name: 'app_chat_index', methods: ['GET'])]
+    public function index(ChatRepository $chatRepository, UserChatRoomsRepository $userChatRoomsRepository, Security $security, UserRepository $userRepository): Response
     {
+        $user = $userRepository->findOneBy(["username" => $security->getUser()->getUserIdentifier()]);
         return $this->render('chat/index.html.twig', [
-            'chats' => $chatRepository->findAllActive(),
+            'chats' => $chatRepository->findAllActiveChats($userChatRoomsRepository),
+            'myChats' => $chatRepository->findAllMyChats($userChatRoomsRepository, $user->getId()),
+            'user' => $user,
         ]);
     }
 
     #[Route('/new', name: 'app_chat_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(EntityManagerInterface $entityManager, UserRepository $userRepository): Response
     {
+        $user = $userRepository->findOneBy(['username' => $this->getUser()->getUserIdentifier()]);
         $chat = new Chat();
-        $form = $this->createForm(ChatType::class, $chat);
-        $form->handleRequest($request);
+        $entityManager->persist($chat);
+        $entityManager->flush();
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($chat);
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_chat_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('chat/new.html.twig', [
-            'chat' => $chat,
-            'form' => $form,
-        ]);
+        return $this->redirectToRoute('app_user_chat_rooms_new', ['chat_id' => $chat->getId(), 'user_id' => $user->getId()], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/{id}', name: 'app_chat_show', methods: ['GET'])]
-    public function show(Chat $chat, Security $security, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
+    public function show(Chat $chat, Security $security, UserRepository $userRepository, UserChatRoomsRepository $userChatRoomsRepository): Response
     {
-        $user = $userRepository->findby(['username' => $security->getUser()->getUserIdentifier()]);
-        $user[0]->setChat($chat);
-        $entityManager->persist($user[0]);
-        $entityManager->flush();
+        $user = $userRepository->findOneBy(['username' => $security->getUser()->getUserIdentifier()]);
+        $usersActive = count($userChatRoomsRepository->findByChatId($chat->getId()));
+        
         return $this->render('chat/show.html.twig', [
+            'usersActive' => $usersActive,
             'chat' => $chat,
             'messages' => $chat->getMessages(),
+            'user' => $user,
         ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_chat_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Chat $chat, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(ChatType::class, $chat);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_chat_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('chat/edit.html.twig', [
-            'chat' => $chat,
-            'form' => $form,
-        ]);
-    }
-
-    #[Route('/{id}', name: 'app_chat_delete', methods: ['POST'])]
-    public function delete(Request $request, Chat $chat, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$chat->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($chat);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_chat_index', [], Response::HTTP_SEE_OTHER);
     }
 }

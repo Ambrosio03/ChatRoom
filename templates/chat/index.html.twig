@@ -3,14 +3,12 @@
 {% block title %}Chat index{% endblock %}
 
 {% block body %}
-    <h1>Chat index</h1>
+    <h1>Chat disponibles</h1>
 
     <table class="table">
         <thead>
             <tr>
                 <th>Id</th>
-                <th>Users</th>
-                <th>actions</th>
             </tr>
         </thead>
         <tbody>
@@ -18,12 +16,36 @@
             <tr>
                 <td>{{ chat.id }}</td>
                 <td>
-                    <a href="{{ path('app_chat_show', {'id': chat.id}) }}">show</a>
+                    <a href="{{ path('app_user_chat_rooms_new', {'chat_id': chat.id, 'user_id' : user.id}) }}">Ver</a>
                 </td>
             </tr>
         {% else %}
             <tr>
-                <td colspan="3">no records found</td>
+                <td colspan="3">No hay chats accesibles</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Chat Unidos</h1>
+
+    <table class="my-table">
+        <thead>
+            <tr>
+                <th>Id</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for chat in myChats %}
+            <tr>
+                <td>{{ chat.id }}</td>
+                <td>
+                    <a href="{{ path('app_user_chat_rooms_new', {'chat_id': chat.id, 'user_id' : user.id}) }}">Ver</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">No estas unido a ningun chat</td>
             </tr>
         {% endfor %}
         </tbody>

@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Chat;
+use App\Repository\UserChatRoomsRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,40 +18,24 @@ class ChatRepository extends ServiceEntityRepository
         parent::__construct($registry, Chat::class);
     }
 
-    public function findAllActive(): array
+    public function findAllActiveChats(UserChatRoomsRepository $userChatRoomsRepository): array
     {
-        $chats = $this->findAll();
+        $userChatsRooms = $userChatRoomsRepository->findGroupByChatId();
         $activeChats = [];
-        foreach ($chats as $chat) {
-            if ($chat->getUsers() != null) {
-                $activeChats[] = $chat;
-            }
+        foreach ($userChatsRooms as $userChatRoom) {
+            $activeChats[] = $userChatRoom->getChatId();
         }
         return $activeChats;
     }
 
-    //    /**
-    //     * @return Chat[] Returns an array of Chat objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('c.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findAllMyChats(UserChatRoomsRepository $userChatRoomsRepository, $userId): array
+    {
+        $userChatsRooms = $userChatRoomsRepository->findByUserId($userId);
+        $activeChats = [];
+        foreach ($userChatsRooms as $userChatRoom) {
+            $activeChats[] = $userChatRoom->getChatId();
+        }
+        return $activeChats;
+    }
 
-    //    public function findOneBySomeField($value): ?Chat
-    //    {
-    //        return $this->createQueryBuilder('c')
-    //            ->andWhere('c.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

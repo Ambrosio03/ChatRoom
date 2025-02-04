@@ -34,6 +34,7 @@ class Chat
     {
         $this->messages = new ArrayCollection();
         $this->users = new ArrayCollection();
+        $this->userChatRooms = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -81,25 +82,41 @@ class Chat
         return $this->users;
     }
 
-    public function addUser(User $user): static
+    /**
+     * @var Collection<int, UserChatRooms>
+     */
+    #[ORM\OneToMany(targetEntity: UserChatRooms::class, mappedBy: 'chat_id')]
+    private Collection $userChatRooms;
+
+
+    /**
+     * @return Collection<int, UserChatRooms>
+     */
+    public function getUserChatRooms(): Collection
     {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-            $user->setChat($this);
+        return $this->userChatRooms;
+    }
+
+    public function addUserChatRoom(UserChatRooms $userChatRoom): static
+    {
+        if (!$this->userChatRooms->contains($userChatRoom)) {
+            $this->userChatRooms->add($userChatRoom);
+            $userChatRoom->setChatId($this);
         }
 
         return $this;
     }
 
-    public function removeUser(User $user): static
+    public function removeUserChatRoom(UserChatRooms $userChatRoom): static
     {
-        if ($this->users->removeElement($user)) {
+        if ($this->userChatRooms->removeElement($userChatRoom)) {
             // set the owning side to null (unless already changed)
-            if ($user->getChat() === $this) {
-                $user->setChat(null);
+            if ($userChatRoom->getChatId() === $this) {
+                $userChatRoom->setChatId(null);
             }
         }
 
         return $this;
     }
+
 }

@@ -36,18 +36,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     /**
-     * @var Collection<int, Message>
+     * @var Collection<int, UserChatRooms>
      */
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $messages;
-
-    #[ORM\ManyToOne(inversedBy: 'users')]
-    private ?Chat $chat = null;
+    #[ORM\OneToMany(targetEntity: UserChatRooms::class, mappedBy: 'user_id')]
+    private Collection $userChatRooms;
 
     public function __construct()
     {
-        $this->messages = new ArrayCollection();
+        $this->userChatRooms = new ArrayCollection();
     }
+
 
     public function getId(): ?int
     {
@@ -124,44 +122,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Message>
+     * @return Collection<int, UserChatRooms>
      */
-    public function getMessages(): Collection
+    public function getUserChatRooms(): Collection
     {
-        return $this->messages;
+        return $this->userChatRooms;
     }
 
-    public function addMessage(Message $message): static
+    public function addUserChatRoom(UserChatRooms $userChatRoom): static
     {
-        if (!$this->messages->contains($message)) {
-            $this->messages->add($message);
-            $message->setUser($this);
+        if (!$this->userChatRooms->contains($userChatRoom)) {
+            $this->userChatRooms->add($userChatRoom);
+            $userChatRoom->setUserId($this);
         }
 
         return $this;
     }
 
-    public function removeMessage(Message $message): static
+    public function removeUserChatRoom(UserChatRooms $userChatRoom): static
     {
-        if ($this->messages->removeElement($message)) {
+        if ($this->userChatRooms->removeElement($userChatRoom)) {
             // set the owning side to null (unless already changed)
-            if ($message->getUser() === $this) {
-                $message->setUser(null);
+            if ($userChatRoom->getUserId() === $this) {
+                $userChatRoom->setUserId(null);
             }
         }
 
         return $this;
     }
 
-    public function getChat(): ?Chat
-    {
-        return $this->chat;
-    }
-
-    public function setChat(?Chat $chat): static
-    {
-        $this->chat = $chat;
-
-        return $this;
-    }
 }

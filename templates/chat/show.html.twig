@@ -5,6 +5,8 @@
 {% block body %}
     <h1>Chat</h1>
 
+    <h3>Number of members: {{ usersActive }}</h3>
+
     <table class="table">
         <tbody>
             <tr>
@@ -23,6 +25,12 @@
     </div>
     {% endfor %}
 
+    <a href="{{ path('app_message_new', { 'id': chat.id }) }}">New Message</a>
 
-    {{ include('chat/_delete_form.html.twig') }}
+    <form action="{{ path('app_user_chat_rooms_delete') }}" method="post">
+        <input type="hidden" name="user_id" value="{{ user.id }}" />
+        <input type="hidden" name="chat_id" value="{{ chat.id }}"/>
+    <button type="submit">Exit</button>
+</form>
+
 {% endblock %}
